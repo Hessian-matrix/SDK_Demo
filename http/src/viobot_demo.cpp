@@ -1,6 +1,7 @@
 ﻿#include <iostream>
 #include <cstring>
 #include <string>
+#include <cmath>
 
 using namespace std;
 #include "vio_sdk.h"
@@ -29,11 +30,10 @@ using namespace std;
 #define system_addkeyframe  "/Smart/addKeyFrame"
 #define system_reboot       "/System/reboot"
 //用net_vio_set_cfg 得加算法数字 例如
-#define algorithm_enable    "/Algorithm/enable/2" ///Algorithm/enable/2
-#define algorithm_disable   "/Algorithm/disable/2"///Algorithm/disable/2
-#define algorithm_reboot    "/Algorithm/reboot/2"///Algorithm/reboot/2
-#define algorithm_reset     "/Algorithm/reset/2"///Algorithm/reset/2
-
+#define algorithm_enable    "/Algorithm/enable/3" 
+#define algorithm_disable   "/Algorithm/disable/3"
+#define algorithm_reboot    "/Algorithm/reboot/3"
+#define algorithm_reset     "/Algorithm/reset/3"
 typedef enum {
     ready = 0,
     stereo1_initializing,
@@ -188,7 +188,7 @@ void vio_call stream_callback(int channel, const vio_frame_info_s* frameInfo, co
     }
     else if (frameInfo->type == vio_frame_sys_state) {//get the status of system
         print_frame_info(channel, frameInfo);
-        //printf("sys_status:%d\n", frameData[frameInfo->length - 1]);
+        printf("sys_status:%d\n", frameData[frameInfo->length - 1]);
         sys_status = static_cast<system_status>(frameData[frameInfo->length - 1]);
     }
     else
