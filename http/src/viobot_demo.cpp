@@ -30,10 +30,11 @@ using namespace std;
 #define system_addkeyframe  "/Smart/addKeyFrame"
 #define system_reboot       "/System/reboot"
 //用net_vio_set_cfg 得加算法数字 例如
-#define algorithm_enable    "/Algorithm/enable/3" 
-#define algorithm_disable   "/Algorithm/disable/3"
-#define algorithm_reboot    "/Algorithm/reboot/3"
-#define algorithm_reset     "/Algorithm/reset/3"
+#define algorithm_enable    "/Algorithm/enable/4"
+#define algorithm_disable   "/Algorithm/disable/4"
+#define algorithm_reboot    "/Algorithm/reboot/4"
+#define algorithm_reset     "/Algorithm/reset/4"
+
 typedef enum {
     ready = 0,
     stereo1_initializing,
@@ -139,7 +140,6 @@ void vio_call event_callback(const char* data, int length, void* userData){
 }
 
 void pose_data_print(int length, const char* frameData) {
-    printf("pose_data:\n");
     int st = 0;
     int pointLen = 3 * 4;
     int quatLen = 4 * 4;
@@ -147,23 +147,19 @@ void pose_data_print(int length, const char* frameData) {
     QVector4D quat;
     QVector3D angles;
     while (st <= (length - pointLen - quatLen)){
+        std::cout << "Pose data:" << std::endl;
         pt = byte2Point((char*)frameData, &st, length);
         std::cout << "\t Position:" << pt.x << "," << pt.y << "," << pt.z << "\n";
         quat = byte2Quat((char*)frameData, &st, length);
         std::cout << "\t Quaternion:" << quat.x << "," << quat.y << "," << quat.z << "," << quat.w << "\n";
         angles = quat2EulerAngles(quat);
         std::cout << "\t Euler_angles:" << angles.x << "," << angles.y << "," << angles.z << "\n";
-    }
-}
-
-void tiwst_data_print(int length,const char* frameData) {
-    printf("twist_data:\n");
-    QVector3D pt;
-    int st = 0;
-    int pointLen = 3 * 4;
-    while (st <= (length - pointLen)){//linear.x、linear.y、linear.z、angular.x、angular.y、angular.z
+        std::cout << "twist data:" << std::endl;
         pt = byte2Point((char*)frameData, &st, length);
-        std::cout << pt.x << "," << pt.y << "," << pt.z << "\n";
+        std::cout << "\t linear:" << pt.x << "," << pt.y << "," << pt.z << "\n";
+        pt = byte2Point((char*)frameData, &st, length);
+        std::cout << "\t angular:" << pt.x << "," << pt.y << "," << pt.z << "\n";
+        std::cout << "==================" << std::endl;
     }
 }
 
@@ -178,13 +174,9 @@ void print_frame_info(int channel, const vio_frame_info_s* frameInfo) {
 }
 
 void vio_call stream_callback(int channel, const vio_frame_info_s* frameInfo, const char* frameData, void* userData){
-    if (frameInfo->type == vio_frame_loop_pose) {
+    if (frameInfo->type == vio_frame_pose_and_twist) {
         print_frame_info(channel, frameInfo);
         pose_data_print(frameInfo->length,frameData);
-    }
-    else if (frameInfo->type == vio_frame_twist) {
-        print_frame_info(channel, frameInfo);
-        tiwst_data_print(frameInfo->length,frameData);
     }
     else if (frameInfo->type == vio_frame_sys_state) {//get the status of system
         print_frame_info(channel, frameInfo);
@@ -243,16 +235,16 @@ int main(int argc, char* argv[]){
         else if (v == 2){//start or stop
             char buffer[] = "{}";
             if (sys_status == ready) {//The system is currently in a ready state and can be started directly
-                ret = net_vio_set_cfg(loginHandle, "/Algorithm/enable/2", buffer, strlen(buffer));
+                ret = net_vio_set_cfg(loginHandle, algorithm_enable, buffer, strlen(buffer));
             }
-            else if (sys_status == stereo2_running) {//The system is currently in a running state and can be stoped
-                ret = net_vio_set_cfg(loginHandle, "/Algorithm/disable/2", buffer, strlen(buffer));
+            else if (sys_status == stereo3_running) {//The system is currently in a running state and can be stoped
+                ret = net_vio_set_cfg(loginHandle, algorithm_disable, buffer, strlen(buffer));
             }
         }
         else if (v == 3) {//algo restart
             char buffer[]="{}";
-            if (sys_status == stereo2_running) {//The stereo2 algorithm is currently in a running state and can be restart
-                ret = net_vio_set_cfg(loginHandle, "/Algorithm/restart/2", buffer, strlen(buffer));
+            if (sys_status == stereo3_running) {//The stereo3 algorithm is currently in a running state and can be restart
+                ret = net_vio_set_cfg(loginHandle, algorithm_reboot, buffer, strlen(buffer));
             }
         }
     }
