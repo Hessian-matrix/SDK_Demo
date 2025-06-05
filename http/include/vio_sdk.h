@@ -29,23 +29,23 @@ typedef void* HANDLE;
 #define vio_call __stdcall
 
 /**
- * @brief Á¬½Ó»Øµ÷
- * @param [out] state:Á¬½Ó×´Ì¬,1-ÒÑÁ¬½Ó£¬0-ÒÑ¶Ï¿ª£¬-1-´íÎó
- * @param [out] userData:ÓÃ»§×Ô¶¨ÒåÊı¾İ
- * @return ÎŞ
+ * @brief è¿æ¥å›è°ƒ
+ * @param [out] state:è¿æ¥çŠ¶æ€,1-å·²è¿æ¥ï¼Œ0-å·²æ–­å¼€ï¼Œ-1-é”™è¯¯
+ * @param [out] userData:ç”¨æˆ·è‡ªå®šä¹‰æ•°æ®
+ * @return æ— 
  */
 typedef void(vio_call* vio_connect_callback)(int state, void* userData);
 
 /**
- * @brief ÊÂ¼ş»Øµ÷
- * @param [out] data:Êı¾İÄÚÈİ
- * @param [out] length:Êı¾İ³¤¶È
- * @param [out] userData:ÓÃ»§×Ô¶¨ÒåÊı¾İ
- * @return ÎŞ
+ * @brief äº‹ä»¶å›è°ƒ
+ * @param [out] data:æ•°æ®å†…å®¹
+ * @param [out] length:æ•°æ®é•¿åº¦
+ * @param [out] userData:ç”¨æˆ·è‡ªå®šä¹‰æ•°æ®
+ * @return æ— 
  */
 typedef void(vio_call* vio_event_callback)(const char* data, int length, void* userData);
 
-//µÇÂ¼ĞÅÏ¢
+//ç™»å½•ä¿¡æ¯
 typedef struct
 {
 	char	ipaddr[32];		
@@ -57,7 +57,7 @@ typedef struct
 	vio_event_callback event_cb;
 }vio_login_info_s;
 
-//Ö¡ÀàĞÍ
+//å¸§ç±»å‹
 typedef enum
 {
 	vio_frame_imu = 1,
@@ -75,9 +75,10 @@ typedef enum
 	vio_frame_twist,
 	vio_frame_rdf_pose,
 	vio_frame_rdf_points,
+        vio_frame_pose_and_twist = 26,
 }vio_frame_type_e;
 
-//Ö¡ĞÅÏ¢
+//å¸§ä¿¡æ¯
 typedef struct
 {
 	unsigned int 	type;
@@ -90,83 +91,83 @@ typedef struct
 
 
 /**
- * @brief »ñÈ¡SDK°æ±¾ĞÅÏ¢
- * @param ÎŞ
- * @return SDK°æ±¾ĞÅÏ¢£¬2¸ö¸ß×Ö½Ú±íÊ¾Ö÷°æ±¾£¬2¸öµÍ×Ö½Ú±íÊ¾´Î°æ±¾¡£Èç0x00030000:±íÊ¾°æ±¾Îª3.0
+ * @brief è·å–SDKç‰ˆæœ¬ä¿¡æ¯
+ * @param æ— 
+ * @return SDKç‰ˆæœ¬ä¿¡æ¯ï¼Œ2ä¸ªé«˜å­—èŠ‚è¡¨ç¤ºä¸»ç‰ˆæœ¬ï¼Œ2ä¸ªä½å­—èŠ‚è¡¨ç¤ºæ¬¡ç‰ˆæœ¬ã€‚å¦‚0x00030000:è¡¨ç¤ºç‰ˆæœ¬ä¸º3.0
  */
 NET_VIO_API LONG vio_call net_vio_sdk_version();
 
 /**
- * @brief SDK³õÊ¼»¯£¬³ÌĞò¿ªÊ¼ºóµ÷ÓÃÒ»´Î¼´¿É
- * @param ÎŞ
- * @return ³É¹¦·µ»Ø1£¬Ê§°Ü·µ»Ø´íÎóÂë
+ * @brief SDKåˆå§‹åŒ–ï¼Œç¨‹åºå¼€å§‹åè°ƒç”¨ä¸€æ¬¡å³å¯
+ * @param æ— 
+ * @return æˆåŠŸè¿”å›1ï¼Œå¤±è´¥è¿”å›é”™è¯¯ç 
  */
 NET_VIO_API BOOL vio_call net_vio_sdk_init();
 
 /**
- * @brief SDKÍË³ö£¬³ÌĞò½áÊøÇ°µ÷ÓÃÒ»´Î¼´¿É
- * @param ÎŞ
- * @return ³É¹¦·µ»Ø1£¬Ê§°Ü·µ»Ø´íÎóÂë
+ * @brief SDKé€€å‡ºï¼Œç¨‹åºç»“æŸå‰è°ƒç”¨ä¸€æ¬¡å³å¯
+ * @param æ— 
+ * @return æˆåŠŸè¿”å›1ï¼Œå¤±è´¥è¿”å›é”™è¯¯ç 
  */
 NET_VIO_API BOOL vio_call net_vio_sdk_exit();
 
 /**
- * @brief Éè±¸µÇÂ¼
- * @param [in] login_info:µÇÂ¼ĞÅÏ¢
- * @return ³É¹¦·µ»ØµÇÂ¼¾ä±ú£¬Ê§°Ü·µ»ØNULL
+ * @brief è®¾å¤‡ç™»å½•
+ * @param [in] login_info:ç™»å½•ä¿¡æ¯
+ * @return æˆåŠŸè¿”å›ç™»å½•å¥æŸ„ï¼Œå¤±è´¥è¿”å›NULL
  */
 NET_VIO_API HANDLE vio_call net_vio_login(vio_login_info_s loginInfo);
 
 /**
- * @brief Éè±¸µÇ³ö
- * @param [in] loginHandle:µÇÂ¼¾ä±ú
- * @return ³É¹¦·µ»Ø1£¬Ê§°Ü·µ»Ø´íÎóÂë
+ * @brief è®¾å¤‡ç™»å‡º
+ * @param [in] loginHandle:ç™»å½•å¥æŸ„
+ * @return æˆåŠŸè¿”å›1ï¼Œå¤±è´¥è¿”å›é”™è¯¯ç 
  */
 NET_VIO_API BOOL vio_call net_vio_logout(HANDLE loginHandle);
 
 /**
- * @brief Á÷Êı¾İ»Øµ÷
- * @param [out] channel:Í¨µÀºÅ
- * @param [out] frameInfo:Ö¡ĞÅÏ¢
- * @param [out] frame:Ö¡Êı¾İ
- * @param [out] userData:ÓÃ»§×Ô¶¨ÒåÊı¾İ
- * @return ÎŞ
+ * @brief æµæ•°æ®å›è°ƒ
+ * @param [out] channel:é€šé“å·
+ * @param [out] frameInfo:å¸§ä¿¡æ¯
+ * @param [out] frame:å¸§æ•°æ®
+ * @param [out] userData:ç”¨æˆ·è‡ªå®šä¹‰æ•°æ®
+ * @return æ— 
  */
 typedef void(vio_call *vio_stream_callback)(int channel, const vio_frame_info_s* frameInfo, const char* frameData, void* userData);
 
 /**
- * @brief Á÷Êı¾İÁ¬½Ó
- * @param [in] loginHandle:µÇÂ¼¾ä±ú
- * @param [in] channel:Í¨µÀºÅ£¬1-IMU+»Ø»·Î»×Ë+Ëã·¨Î»×Ë£»2-¿É¼û¹â»Ò¶ÈÍ¼£»3-Éî¶ÈÍ¼+·ù¶ÈÍ¼£»4-½¨Í¼µãÔÆ;5-tofµãÔÆ;6-ÓÒÄ¿Í¼Ïñ;
- * @param [in] cb:Á÷Êı¾İ»Øµ÷
- * @return ³É¹¦·µ»ØÁ÷¾ä±ú£¬Ê§°Ü·µ»ØNULL
+ * @brief æµæ•°æ®è¿æ¥
+ * @param [in] loginHandle:ç™»å½•å¥æŸ„
+ * @param [in] channel:é€šé“å·ï¼Œ1-IMU+å›ç¯ä½å§¿+ç®—æ³•ä½å§¿ï¼›2-å¯è§å…‰ç°åº¦å›¾ï¼›3-æ·±åº¦å›¾+å¹…åº¦å›¾ï¼›4-å»ºå›¾ç‚¹äº‘;5-tofç‚¹äº‘;6-å³ç›®å›¾åƒ;
+ * @param [in] cb:æµæ•°æ®å›è°ƒ
+ * @return æˆåŠŸè¿”å›æµå¥æŸ„ï¼Œå¤±è´¥è¿”å›NULL
  */
 NET_VIO_API HANDLE vio_call net_vio_stream_connect(HANDLE loginHandle, int channel, vio_stream_callback cb);
 
 /**
- * @brief Á÷Êı¾İ¶Ï¿ª
- * @param [in] streamHandle:Á÷¾ä±ú
- * @return ³É¹¦·µ»Ø1£¬Ê§°Ü·µ»Ø´íÎóÂë
+ * @brief æµæ•°æ®æ–­å¼€
+ * @param [in] streamHandle:æµå¥æŸ„
+ * @return æˆåŠŸè¿”å›1ï¼Œå¤±è´¥è¿”å›é”™è¯¯ç 
  */
 NET_VIO_API BOOL vio_call net_vio_stream_disconnect(HANDLE streamHandle);
 
 /**
- * @brief »ñÈ¡²ÎÊı
- * @param [in] loginHandle:µÇÂ¼¾ä±ú
- * @param [in] uri:½Ó¿Ú·ÃÎÊµØÖ·
- * @param [out] dataBuff:Êı¾İ»º³åÇø
- * @param [in] buffSize:»º³åÇø´óĞ¡
- * @return ³É¹¦·µ»Ø1£¬Ê§°Ü·µ»Ø´íÎóÂë
+ * @brief è·å–å‚æ•°
+ * @param [in] loginHandle:ç™»å½•å¥æŸ„
+ * @param [in] uri:æ¥å£è®¿é—®åœ°å€
+ * @param [out] dataBuff:æ•°æ®ç¼“å†²åŒº
+ * @param [in] buffSize:ç¼“å†²åŒºå¤§å°
+ * @return æˆåŠŸè¿”å›1ï¼Œå¤±è´¥è¿”å›é”™è¯¯ç 
  */
 NET_VIO_API BOOL vio_call net_vio_get_cfg(HANDLE loginHandle, const char* uri, char* dataBuff, int buffSize);
 
 /**
- * @brief ÉèÖÃ²ÎÊı
- * @param [in] loginHandle:µÇÂ¼¾ä±ú
- * @param [in] uri:½Ó¿Ú·ÃÎÊµØÖ·
- * @param [in] data:ÊäÈë²ÎÊı
- * @param [in] length:²ÎÊı³¤¶È
- * @return ³É¹¦·µ»Ø1£¬Ê§°Ü·µ»Ø´íÎóÂë
+ * @brief è®¾ç½®å‚æ•°
+ * @param [in] loginHandle:ç™»å½•å¥æŸ„
+ * @param [in] uri:æ¥å£è®¿é—®åœ°å€
+ * @param [in] data:è¾“å…¥å‚æ•°
+ * @param [in] length:å‚æ•°é•¿åº¦
+ * @return æˆåŠŸè¿”å›1ï¼Œå¤±è´¥è¿”å›é”™è¯¯ç 
  */
 NET_VIO_API BOOL vio_call net_vio_set_cfg(HANDLE loginHandle, const char* uri, const char* data, int length);
 
