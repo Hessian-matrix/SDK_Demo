@@ -1,0 +1,3 @@
+build/
+cmake-build-*/
+viobot_demo
