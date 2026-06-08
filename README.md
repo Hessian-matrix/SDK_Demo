@@ -1,100 +1,99 @@
 # Viobot2 SDK Demo
 
-Viobot2 SDK Demo is a Linux CMake example for connecting to a Viobot/Baton device, controlling stereo algorithms, and receiving pose data.
+Viobot2 SDK Demo 是一个 Linux CMake 示例工程，用于连接 Viobot/Baton 设备，控制 stereo 算法，并接收位姿数据。
 
+English version: [README.md](README.md).
 
-## Features
+## 功能
 
-- Log in to a Viobot/Baton device through the Viobot SDK.
-- Query the current algorithm status from `vio_frame_sys_state` on `Channel=1` after login.
-- Keep a background `Channel=1` monitor running so heartbeat output reflects external algorithm control commands.
-- Print heartbeat, algorithm status, and pose frequency in one compact line.
-- Receive realtime `Channel=1` pose frames from `GET /Stream?Channel=1`.
-- Start, stop, and reboot Stereo3 through `/Algorithm/*/4`.
-- Start, stop, and reboot Stereo4 through `/Algorithm/*/5`.
-- Receive the current realtime pose from `Channel=1` after starting Stereo3 or Stereo4.
-- Select the bundled Linux SDK shared library automatically by CPU architecture.
+- 通过 Viobot SDK 登录 Viobot/Baton 设备。
+- 登录后通过 `Channel=1` 的 `vio_frame_sys_state` 查询当前算法状态。
+- 保持后台 `Channel=1` 监听，使心跳输出能反映外部算法控制命令。
+- 将心跳、算法状态和位姿频率合并为一行紧凑输出。
+- 通过 `GET /Stream?Channel=1` 接收当前实时位姿帧。
+- 通过 `/Algorithm/*/4` 启动、停止、重启 Stereo3。
+- 通过 `/Algorithm/*/5` 启动、停止、重启 Stereo4。
+- 启动 Stereo3 或 Stereo4 后通过 `Channel=1` 接收当前实时位姿。
+- CMake 按 CPU 架构自动选择仓库内置的 Linux SDK 动态库。
 
-## Interface Summary
+## 接口概览
 
-| Feature | Interface | Notes |
+| 功能 | 接口 | 说明 |
 | --- | --- | --- |
-| Realtime pose stream | `GET /Stream?Channel=1` | Receives `type=26` pose and twist frames |
-| System status stream | `GET /Stream?Channel=1` | Receives `type=8` `vio_frame_sys_state` frames |
-| Stereo3 control | `/Algorithm/enable/4`, `/disable/4`, `/reboot/4` | Sent through `net_vio_set_cfg` |
-| Stereo4 control | `/Algorithm/enable/5`, `/disable/5`, `/reboot/5` | Sent through `net_vio_set_cfg` |
+| 实时位姿流 | `GET /Stream?Channel=1` | 接收 `type=26` 位姿和速度帧 |
+| 系统状态流 | `GET /Stream?Channel=1` | 接收 `type=8` 的 `vio_frame_sys_state` 状态帧 |
+| Stereo3 控制 | `/Algorithm/enable/4`、`/disable/4`、`/reboot/4` | 通过 `net_vio_set_cfg` 发送 |
+| Stereo4 控制 | `/Algorithm/enable/5`、`/disable/5`、`/reboot/5` | 通过 `net_vio_set_cfg` 发送 |
 
-`vio_frame_sys_state` follows the Baton runtime `system_status` values: `0=ready`, `7=stereo3_initializing`, `8=stereo3_running`, `9=stereo4_initializing`, and `10=stereo4_running`. Some older runtime builds may still report `51` for `stereo4_running`, so the demo accepts both `10` and `51` as Stereo4 running.
+`vio_frame_sys_state` 使用 Baton 运行时 `system_status` 状态值：`0=ready`、`7=stereo3_initializing`、`8=stereo3_running`、`9=stereo4_initializing`、`10=stereo4_running`。部分旧运行时可能仍用 `51` 表示 `stereo4_running`，因此 demo 同时兼容 `10` 和 `51`。
 
-The realtime pose stream provides positions in meters, timestamps in seconds, and quaternions in `x, y, z, w` order on the wire. The demo counts every received `type=26` pose frame for `pose fps`, while pose text output is throttled to 10 Hz and each printed pose sample is one line.
+实时位姿流中，位置单位为米，时间戳单位为秒，线上四元数顺序为 `x, y, z, w`。示例程序会把每个收到的 `type=26` 位姿帧都计入 `pose fps`，但位姿文本输出限频到 10Hz，每条打印出来的位姿 sample 占一行。
 
-This demo intentionally uses only the `Channel=1` VIO pose stream. `Channel=1` `type=26` frames do not contain a source identifier, so the demo does not infer Stereo3/Stereo4 ownership from pose frames. Algorithm status is reported from `vio_frame_sys_state`; `pose fps` only means the current `Channel=1` pose stream is being received.
 
-## Terminal Output
+## 终端输出
 
-- Pose lines are green and printed at up to 10 Hz.
-- Operation menus and control responses are yellow.
-- Heartbeat lines are white and include the actual `Channel=1` receive FPS, counted before pose print throttling:
+- 位姿行使用绿色输出，最高 10Hz。
+- 操作菜单和控制响应使用黄色输出。
+- 心跳行使用白色输出，并包含 `Channel=1` 实际接收 FPS；该频率在位姿打印限频之前统计：
 
 ```text
 algo system status: stereo4_running, heartbeat status: ok, pose fps: 24.9
 ```
 
-The SDK library has been verified against documented interfaces such as `/System/version`, `/System/hardware_status`, `/Baton/config`, `/System/network`, and `/Algorithm/disable/5` through `net_vio_get_cfg` / `net_vio_set_cfg`.
 
-## Supported Linux Architectures
+## 支持的 Linux 架构
 
-CMake maps `CMAKE_SYSTEM_PROCESSOR` to the SDK library directory:
+CMake 会根据 `CMAKE_SYSTEM_PROCESSOR` 自动选择 SDK 库目录：
 
-| Processor | SDK directory |
+| 处理器架构 | SDK 目录 |
 | --- | --- |
 | `x86_64`, `amd64` | `lib/linux/x86_64` |
 | `i386`, `i686`, `x86` | `lib/linux/i386` |
 | `aarch64`, `arm64` | `lib/linux/arm` |
 
-`lib/linux/arm/libvio_sdk.so` is an AArch64 64-bit shared library.
+`lib/linux/arm/libvio_sdk.so` 是 AArch64 64 位动态库。
 
-## Requirements
+## 依赖
 
 - Linux
 - GCC/G++
-- CMake 3.10 or newer
-- Network access to the Viobot/Baton service on port `8000`
+- CMake 3.10 或更高版本
+- 能通过网络访问 Viobot/Baton 服务的 `8000` 端口
 
-## Build
+## 编译
 
 ```bash
 cmake -S . -B build
 cmake --build build -j
 ```
 
-The executable is generated at:
+生成的可执行文件位于：
 
 ```bash
 build/viobot_demo
 ```
 
-## Run
+## 运行
 
 ```bash
 ./build/viobot_demo
 ```
 
-Enter the device IP address when prompted. After login, the demo connects `Channel=1` once to read the current `vio_frame_sys_state` algorithm status, then starts a background `Channel=1` monitor before entering the operation menu. Heartbeat events are printed as a compact status line, so external `/Algorithm/*` PUT commands are reflected in the heartbeat status while the demo is waiting at the menu. For Stereo3/Stereo4 menu actions, the demo confirms the selected algorithm only from `vio_frame_sys_state`; pose frames are used only for pose output and FPS counting.
+按提示输入设备 IP。登录成功后，示例程序会先连接一次 `Channel=1`，读取当前 `vio_frame_sys_state` 算法状态，然后启动后台 `Channel=1` 监听并进入操作菜单。心跳事件会合并为紧凑状态行输出，因此程序停在菜单时，外部 `/Algorithm/*` PUT 控制命令也会反映到心跳状态中。对于 Stereo3/Stereo4 菜单操作，示例程序只根据 `vio_frame_sys_state` 确认所选算法；位姿帧只用于位姿输出和 FPS 统计。
 
-| Operation | Description |
+| 操作 | 说明 |
 | --- | --- |
-| `0` | Log out and exit |
-| `1` | Start Stereo3 and receive realtime pose |
-| `2` | Reboot Stereo3 and receive realtime pose |
-| `3` | Stop Stereo3 |
-| `4` | Start Stereo4 and receive realtime pose |
-| `5` | Reboot Stereo4 and receive realtime pose |
-| `6` | Stop Stereo4 |
+| `0` | 登出并退出 |
+| `1` | 启动 Stereo3 并接收实时位姿 |
+| `2` | 重启 Stereo3 并接收实时位姿 |
+| `3` | 停止 Stereo3 |
+| `4` | 启动 Stereo4 并接收实时位姿 |
+| `5` | 重启 Stereo4 并接收实时位姿 |
+| `6` | 停止 Stereo4 |
 
-When receiving pose data, input `q` and press Enter to disconnect the pose stream and return to the numeric menu.
+接收位姿时输入 `q` 并回车，可断开位姿流并回到数字菜单。
 
-## Repository Layout
+## 目录结构
 
 ```text
 .
